@@ -1,9 +1,9 @@
 import { Bodies, Body, Engine, Events, Render, Runner, World } from "matter-js";
 import { FRUITS_BASE, FRUITS_HLW } from "./fruits";
 import "./dark.css";
-import * as faceapi from 'face-api.js';
+import * as faceapi from "face-api.js";
 
-let THEME = "halloween"; // { base, halloween }
+let THEME = "base"; // { base, halloween }
 let FRUITS = FRUITS_BASE;
 
 switch (THEME) {
@@ -23,38 +23,41 @@ const render = Render.create({
     background: "#F7F4C8",
     width: 620,
     height: 850,
-  }
+  },
 });
-const video = document.getElementById('video')
+const video = document.getElementById("video");
 let maxExpression = null;
 
 function startVideo() {
   navigator.getUserMedia(
     { video: {} },
-    stream => video.srcObject = stream,
-    err => console.error(err)
-  )
+    (stream) => (video.srcObject = stream),
+    (err) => console.error(err)
+  );
 }
 
 Promise.all([
-  faceapi.nets.tinyFaceDetector.loadFromUri('/models'),
-  faceapi.nets.faceLandmark68Net.loadFromUri('/models'),
-  faceapi.nets.faceRecognitionNet.loadFromUri('/models'),
-  faceapi.nets.faceExpressionNet.loadFromUri('/models')
-]).then(startVideo)
+  faceapi.nets.tinyFaceDetector.loadFromUri("/models"),
+  faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
+  faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+  faceapi.nets.faceExpressionNet.loadFromUri("/models"),
+]).then(startVideo);
 
-video.addEventListener('play', () => {
-  const canvas = faceapi.createCanvasFromMedia(video)
-  document.body.append(canvas)
-  const displaySize = { width: video.width, height: video.height }
-  faceapi.matchDimensions(canvas, displaySize)
+video.addEventListener("play", () => {
+  const canvas = faceapi.createCanvasFromMedia(video);
+  document.body.append(canvas);
+  const displaySize = { width: video.width, height: video.height };
+  faceapi.matchDimensions(canvas, displaySize);
   setInterval(async () => {
-    const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions()
-    const resizedDetections = faceapi.resizeResults(detections, displaySize)
-    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
-    faceapi.draw.drawDetections(canvas, resizedDetections)
-    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections)
-    faceapi.draw.drawFaceExpressions(canvas, resizedDetections)
+    const detections = await faceapi
+      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+      .withFaceLandmarks()
+      .withFaceExpressions();
+    const resizedDetections = faceapi.resizeResults(detections, displaySize);
+    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    faceapi.draw.drawDetections(canvas, resizedDetections);
+    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+    faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
 
     // 가장 높은 확률의 표정 찾기
     const expressions = resizedDetections[0]?.expressions;
@@ -71,33 +74,32 @@ video.addEventListener('play', () => {
     if (maxExpression) {
       console.log("1등 표정:", maxExpression);
     }
-
-  }, 100)
-})
-console.log(maxExpression)
+  }, 100);
+});
+console.log(maxExpression);
 const world = engine.world;
 
 const leftWall = Bodies.rectangle(15, 395, 30, 790, {
   isStatic: true,
-  render: { fillStyle: "#E6B143" }
+  render: { fillStyle: "#E6B143" },
 });
 
 const rightWall = Bodies.rectangle(605, 395, 30, 790, {
   isStatic: true,
-  render: { fillStyle: "#E6B143" }
+  render: { fillStyle: "#E6B143" },
 });
 
 const ground = Bodies.rectangle(310, 820, 620, 60, {
   isStatic: true,
-  render: { fillStyle: "#E6B143" }
+  render: { fillStyle: "#E6B143" },
 });
 
 const topLine = Bodies.rectangle(310, 150, 620, 2, {
   name: "topLine",
   isStatic: true,
   isSensor: true,
-  render: { fillStyle: "#E6B143" }
-})
+  render: { fillStyle: "#E6B143" },
+});
 
 World.add(world, [leftWall, rightWall, ground, topLine]);
 
@@ -117,7 +119,7 @@ function addFruit() {
     index: index,
     isSleeping: true,
     render: {
-      sprite: { texture: `${fruit.name}.png` }
+      sprite: { texture: `${fruit.name}.png` },
     },
     restitution: 0.2,
   });
@@ -135,8 +137,7 @@ window.onkeydown = (event) => {
 
   switch (event.code) {
     case "KeyA":
-      if (interval)
-        return;
+      if (interval) return;
 
       interval = setInterval(() => {
         if (currentBody.position.x - currentFruit.radius > 30)
@@ -148,15 +149,14 @@ window.onkeydown = (event) => {
       break;
 
     case "KeyD":
-      if (interval)
-        return;
+      if (interval) return;
 
       interval = setInterval(() => {
         if (currentBody.position.x + currentFruit.radius < 590)
-        Body.setPosition(currentBody, {
-          x: currentBody.position.x + 1,
-          y: currentBody.position.y,
-        });
+          Body.setPosition(currentBody, {
+            x: currentBody.position.x + 1,
+            y: currentBody.position.y,
+          });
       }, 5);
       break;
 
@@ -170,7 +170,7 @@ window.onkeydown = (event) => {
       }, 1000);
       break;
   }
-}
+};
 
 window.onkeyup = (event) => {
   switch (event.code) {
@@ -179,7 +179,7 @@ window.onkeyup = (event) => {
       clearInterval(interval);
       interval = null;
   }
-}
+};
 
 Events.on(engine, "collisionStart", (event) => {
   event.pairs.forEach((collision) => {
@@ -200,7 +200,7 @@ Events.on(engine, "collisionStart", (event) => {
         newFruit.radius,
         {
           render: {
-            sprite: { texture: `${newFruit.name}.png` }
+            sprite: { texture: `${newFruit.name}.png` },
           },
           index: index + 1,
         }
@@ -211,7 +211,8 @@ Events.on(engine, "collisionStart", (event) => {
 
     if (
       !disableAction &&
-      (collision.bodyA.name === "topLine" || collision.bodyB.name === "topLine")) {
+      (collision.bodyA.name === "topLine" || collision.bodyB.name === "topLine")
+    ) {
       alert("Game over");
     }
   });
