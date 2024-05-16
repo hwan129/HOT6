@@ -1,28 +1,48 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="halloween/10_watermelon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Suika Game - スイカゲーム</title>
 
     <style>
-      body {
-        text-align: center;
-      }
-      canvas{
-        position: absolute;
-      }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            margin: 0;
+            background-color: #F7F4C8;
+        }
+        #game-container {
+            position: relative;
+            width: 620px;
+            height: 850px;
+            margin-right: 20px;
+        }
+        #video-container {
+            position: relative;
+            width: 720px;
+            height: 560px;
+        }
+        canvas, video {
+            position: absolute;
+            top: 100;
+            left: 100;
+        }
     </style>
-  </head>
-  <body>
-    <h1>スイカゲーム</h1>
-    <pre>
-      Use A, S, D to control the fruit.
-      YouTube <a href="https://www.youtube.com/@bbanghyong">빵형의 개발도상국</a>
-    </pre>
-    <video id="video" width="720" height="560" autoplay muted></video>
+</head>
+<body>
+    <div id="game-container">
+        <h1>スイカゲーム</h1>
+        <pre>
+            Use A, S, D to control the fruit.
+            YouTube <a href="https://www.youtube.com/@bbanghyong">빵형의 개발도상국</a>
+        </pre>
+    </div>
+    <div id="video-container">
+        <video id="video" width="720" height="560" autoplay muted></video>
+    </div>
     <script type="module" src="/main.js"></script>
-  
-  </body>
+</body>
 </html>

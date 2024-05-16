@@ -17,7 +17,7 @@ switch (THEME) {
 const engine = Engine.create();
 const render = Render.create({
   engine,
-  element: document.body,
+  element: document.getElementById('game-container'),
   options: {
     wireframes: false,
     background: "#F7F4C8",
@@ -25,15 +25,42 @@ const render = Render.create({
     height: 850,
   },
 });
+
 const video = document.getElementById("video");
+
 let maxExpression = null;
 
 function startVideo() {
-  navigator.getUserMedia(
-    { video: {} },
-    (stream) => (video.srcObject = stream),
-    (err) => console.error(err)
-  );
+  navigator.mediaDevices.getUserMedia(
+    { video: {} }
+  ).then(stream => {
+    video.srcObject = stream;
+    video.addEventListener("loadedmetadata", () => {
+      const canvas = faceapi.createCanvasFromMedia(video);
+      document.getElementById('video-container').append(canvas);
+      const displaySize = { width: video.videoWidth, height: video.videoHeight };
+      faceapi.matchDimensions(canvas, displaySize);
+
+      setInterval(async () => {
+        const detections = await faceapi
+          .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+          .withFaceExpressions();
+
+        if (detections.length > 0) {
+          const expression = detections[0].expressions;
+          const expressions = Object.entries(expression);
+          const max = expressions.reduce((a, b) => (a[1] > b[1] ? a : b));
+          maxExpression = max[0];
+        }
+
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+        faceapi.draw.drawDetections(canvas, resizedDetections);
+        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
+        faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
+      }, 100);
+    });
+  }).catch(err => console.error(err));
 }
 
 Promise.all([
@@ -43,40 +70,8 @@ Promise.all([
   faceapi.nets.faceExpressionNet.loadFromUri("/models"),
 ]).then(startVideo);
 
-video.addEventListener("play", () => {
-  const canvas = faceapi.createCanvasFromMedia(video);
-  document.body.append(canvas);
-  const displaySize = { width: video.width, height: video.height };
-  faceapi.matchDimensions(canvas, displaySize);
-  setInterval(async () => {
-    const detections = await faceapi
-      .detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
-      .withFaceLandmarks()
-      .withFaceExpressions();
-    const resizedDetections = faceapi.resizeResults(detections, displaySize);
-    canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-    faceapi.draw.drawDetections(canvas, resizedDetections);
-    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
-    faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
-
-    // 가장 높은 확률의 표정 찾기
-    const expressions = resizedDetections[0]?.expressions;
-    maxExpression = null;
-    let maxProbability = 0;
-    for (const expression in expressions) {
-      if (expressions[expression] > maxProbability) {
-        maxProbability = expressions[expression];
-        maxExpression = expression;
-      }
-    }
-
-    // 가장 높은 확률의 표정에 해당하는 글자 출력
-    if (maxExpression) {
-      console.log("1등 표정:", maxExpression);
-    }
-  }, 100);
-});
 console.log(maxExpression);
+
 const world = engine.world;
 
 const leftWall = Bodies.rectangle(15, 395, 30, 790, {
