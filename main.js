@@ -40,7 +40,7 @@ function startVideo() {
     video.addEventListener("loadedmetadata", () => {
       const canvas = faceapi.createCanvasFromMedia(video);
       document.getElementById('video-container').append(canvas);
-      const displaySize = { width: video.videoWidth * 1.1, height: video.videoHeight };
+      const displaySize = { width: video.width, height: video.height };
       faceapi.matchDimensions(canvas, displaySize);
 
       setInterval(async () => {
@@ -76,11 +76,11 @@ function handleExpression(expression) {
       interval = setInterval(() => {
         if (currentBody.position.x - currentFruit.radius > 30) {
           Body.setPosition(currentBody, {
-            x: currentBody.position.x - 1,
+            x: currentBody.position.x - 0.5,
             y: currentBody.position.y,
           });
         }
-      }, 5);
+      }, 2);
       break;
 
     case "surprised":
@@ -88,14 +88,15 @@ function handleExpression(expression) {
       interval = setInterval(() => {
         if (currentBody.position.x + currentFruit.radius < 590) {
           Body.setPosition(currentBody, {
-            x: currentBody.position.x + 1,
+            x: currentBody.position.x + 0.5,
             y: currentBody.position.y,
           });
         }
-      }, 5);
+      }, 2);
       break;
 
     case "angry":
+    case "sad":
       currentBody.isSleeping = false;
       disableAction = true;
       setTimeout(() => {

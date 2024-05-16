@@ -22,26 +22,24 @@
         }
         #video-container {
             position: relative;
-            width: 720px;
-            height: 560px;
+            width: 300px;
+            height: 300px;
         }
         canvas, video {
             position: absolute;
-            top: 100;
-            left: 100;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
     <div id="game-container">
-        <h1>スイカゲーム</h1>
         <pre>
             Use A, S, D to control the fruit.
-            YouTube <a href="https://www.youtube.com/@bbanghyong">빵형의 개발도상국</a>
         </pre>
     </div>
     <div id="video-container">
-        <video id="video" width="720" height="560" autoplay muted></video>
+        <video id="video" width="300px" height="300px" autoplay muted></video>
     </div>
     <script type="module" src="/main.js"></script>
 </body>
