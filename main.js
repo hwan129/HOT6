@@ -29,6 +29,8 @@ const render = Render.create({
 const video = document.getElementById("video");
 
 let maxExpression = null;
+let disableAction = false;
+let interval = null;
 
 function startVideo() {
   navigator.mediaDevices.getUserMedia(
@@ -38,7 +40,7 @@ function startVideo() {
     video.addEventListener("loadedmetadata", () => {
       const canvas = faceapi.createCanvasFromMedia(video);
       document.getElementById('video-container').append(canvas);
-      const displaySize = { width: video.videoWidth, height: video.videoHeight };
+      const displaySize = { width: video.videoWidth * 1.1, height: video.videoHeight };
       faceapi.matchDimensions(canvas, displaySize);
 
       setInterval(async () => {
@@ -51,16 +53,61 @@ function startVideo() {
           const expressions = Object.entries(expression);
           const max = expressions.reduce((a, b) => (a[1] > b[1] ? a : b));
           maxExpression = max[0];
+          const maxScore = max[1];
+          console.log(`Max expression: ${maxExpression}, Score: ${maxScore}`);
+          handleExpression(maxExpression);
         }
 
         const resizedDetections = faceapi.resizeResults(detections, displaySize);
         canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
         faceapi.draw.drawDetections(canvas, resizedDetections);
-        faceapi.draw.drawFaceLandmarks(canvas, resizedDetections);
         faceapi.draw.drawFaceExpressions(canvas, resizedDetections);
       }, 100);
     });
   }).catch(err => console.error(err));
+}
+
+function handleExpression(expression) {
+  if (disableAction) return;
+
+  switch (expression) {
+    case "happy":
+      if (interval) return;
+      interval = setInterval(() => {
+        if (currentBody.position.x - currentFruit.radius > 30) {
+          Body.setPosition(currentBody, {
+            x: currentBody.position.x - 1,
+            y: currentBody.position.y,
+          });
+        }
+      }, 5);
+      break;
+
+    case "surprised":
+      if (interval) return;
+      interval = setInterval(() => {
+        if (currentBody.position.x + currentFruit.radius < 590) {
+          Body.setPosition(currentBody, {
+            x: currentBody.position.x + 1,
+            y: currentBody.position.y,
+          });
+        }
+      }, 5);
+      break;
+
+    case "angry":
+      currentBody.isSleeping = false;
+      disableAction = true;
+      setTimeout(() => {
+        addFruit();
+        disableAction = false;
+      }, 1000);
+      break;
+
+    default:
+      clearInterval(interval);
+      interval = null;
+  }
 }
 
 Promise.all([
@@ -69,8 +116,6 @@ Promise.all([
   faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
   faceapi.nets.faceExpressionNet.loadFromUri("/models"),
 ]).then(startVideo);
-
-console.log(maxExpression);
 
 const world = engine.world;
 
@@ -103,8 +148,6 @@ Runner.run(engine);
 
 let currentBody = null;
 let currentFruit = null;
-let disableAction = false;
-let interval = null;
 
 function addFruit() {
   const index = Math.floor(Math.random() * 5);
