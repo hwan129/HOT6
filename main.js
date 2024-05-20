@@ -47,7 +47,11 @@ function startVideo() {
           if (detections.length > 0) {
             const expressions = Object.entries(detections[0].expressions);
             const max = expressions.reduce((a, b) => (a[1] > b[1] ? a : b));
-            maxExpression = max[0];
+
+            if(max[1] > 0.7) {
+              maxExpression = max[0];
+            }
+
             console.log(`Max expression: ${maxExpression}, Score: ${max[1]}`);
             handleExpression(maxExpression);
           }
