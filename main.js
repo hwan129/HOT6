@@ -70,7 +70,6 @@ function startVideo() {
     .catch((err) => console.error(err));
 }
 
-// 표정에 따른 게임 제어 함수
 function handleExpression(expression) {
   if (disableAction) return;
 
